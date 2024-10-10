@@ -33,4 +33,8 @@ pub struct ArgParser
     /// Set a custom paired prefix
     #[arg(short = 'p', long = "pp", action)]
     pub prefix_paired: Option<String>,
+
+    /// Return as absolute?
+    #[arg(short = 'a', long = "absolute", action)]
+    pub absolute: bool,
 }

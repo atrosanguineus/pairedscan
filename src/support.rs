@@ -38,8 +38,8 @@ fn infer_prefixes(argref: &ArgParser) -> (String, String)
             }
 
             // Otherwise, build the two identifiers from it
-            let pref1_from_general: String = x.to_owned() + "1";
-            let pref2_from_general: String = x.to_owned() + "2";
+            let pref1_from_general: String = x.replace('X', "1");
+            let pref2_from_general: String = x.replace('X', "2");
             
             return(pref1_from_general, pref2_from_general);
 
@@ -91,8 +91,8 @@ pub fn get_raw_filelist(root: &Path, depth: usize, suffixes: &[&str]) -> Vec<Pat
 
 pub fn parse_filelist(filelist: &Vec<PathBuf>, argref: &ArgParser) -> String
 {
-    let mut vec_r1: Vec<&PathBuf> = vec![];
-    let mut vec_r2: Vec<&PathBuf> = vec![];
+    let mut vec_r1: Vec<PathBuf> = vec![];
+    let mut vec_r2: Vec<PathBuf> = vec![];
 
     let prefixes: (String, String) = infer_prefixes(argref);
     let r1_pref: String = prefixes.0;
@@ -105,10 +105,17 @@ pub fn parse_filelist(filelist: &Vec<PathBuf>, argref: &ArgParser) -> String
         let contains_r1: bool = str_temp.contains(&r1_pref);
         let contains_r2: bool = str_temp.contains(&r2_pref);
 
+        let final_file = if argref.absolute {
+            file.canonicalize().expect("Error in canonicalising path: what the hell?")
+        } else {
+            file.to_path_buf()
+        };
+        
+
         match contains_r1 {
-            true => vec_r1.push(file),
+            true => vec_r1.push(final_file),
             false => match contains_r2 {
-                true => vec_r2.push(file),
+                true => vec_r2.push(final_file),
                 false => exit_with(-1, &format!("A fastq file does NOT contain either an \"{}\" or \"{}\" identifier. This file is: \"{}\"", r1_pref, r2_pref, str_temp))
                 }
             }
@@ -138,13 +145,13 @@ pub fn parse_filelist(filelist: &Vec<PathBuf>, argref: &ArgParser) -> String
     }
 
     // Finally, we format the output based on interleaving argument
-    let mut final_vec: Vec<&PathBuf> = vec![];
+    let mut final_vec: Vec<PathBuf> = vec![];
     match argref.interleave
     {
         true => {
             for i in 0..vec_r1.len() {
-                final_vec.push(vec_r1[i]);
-                final_vec.push(vec_r2[i]);
+                final_vec.push(vec_r1[i].to_path_buf());
+                final_vec.push(vec_r2[i].to_path_buf());
             }
         },
         false => {

@@ -1,4 +1,5 @@
 use std::{path::PathBuf, process::exit};
+use anyhow::Result;
 use clap::Parser;
 use support::{get_raw_filelist, parse_filelist};
 
@@ -12,7 +13,7 @@ fn exit_with(code: i32, reason: &str)
     exit(code);
 }
 
-fn main() 
+fn main() -> Result<()>
 {
     let argparser: ArgParser = ArgParser::parse();
     if !argparser.name.is_dir() {
@@ -29,7 +30,11 @@ fn main()
         false => vec![".fq", ".fastq"]
     };
 
-    let raw_filelist: Vec<PathBuf> = get_raw_filelist(&argparser.name, search_depth, &suffixes);
-    let parsed_filelist: String = parse_filelist(&raw_filelist, &argparser);
-    println!("{}", parsed_filelist);
+    let raw_filelist: Vec<PathBuf> = get_raw_filelist(&argparser.name, search_depth, &suffixes)?;
+    let parsed_filelist: Vec<String> = parse_filelist(&raw_filelist, &argparser)?;
+    for file in parsed_filelist {
+        println!("{}", file);
+    }
+
+    Ok(())
 }

@@ -15,7 +15,7 @@ fn main() -> Result<()>
     }
 
     let search_depth: usize = match argparser.recursive {
-        true => 100,
+        true => usize::max_value(),
         false => 1
     };
 

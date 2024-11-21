@@ -1,5 +1,5 @@
-use std::{path::PathBuf, process::exit};
-use anyhow::Result;
+use std::path::PathBuf;
+use anyhow::{Result, anyhow};
 use clap::Parser;
 use support::{get_raw_filelist, parse_filelist};
 
@@ -7,17 +7,11 @@ pub mod argparser;
 pub mod support;
 use argparser::ArgParser;
 
-fn exit_with(code: i32, reason: &str)
-{
-    eprintln!("{}", reason);
-    exit(code);
-}
-
 fn main() -> Result<()>
 {
     let argparser: ArgParser = ArgParser::parse();
     if !argparser.name.is_dir() {
-        exit_with(-1, "Path provided is not a directory");
+        return Err(anyhow!("Path provided is not a directory"));
     }
 
     let search_depth: usize = match argparser.recursive {

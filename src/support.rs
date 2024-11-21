@@ -92,7 +92,7 @@ pub fn get_raw_filelist(root: &Path, depth: usize, suffixes: &[&str]) -> Result<
         out_vec.push(curr_entry);
     }
 
-    println!("{:?}", out_vec);
+    //println!("{:?}", out_vec);
     //std::process::exit(-1);
 
     return Ok(out_vec);

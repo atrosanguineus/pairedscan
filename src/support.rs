@@ -1,4 +1,5 @@
-use std::{collections::HashSet, path::{Path, PathBuf}, str::FromStr, vec};
+use std::io::Write;
+use std::{collections::HashSet, fs::File, io::BufWriter, path::{Path, PathBuf}, str::FromStr, vec};
 use anyhow::{anyhow, Result, Context};
 use regex::Regex;
 use walkdir::WalkDir;
@@ -179,7 +180,6 @@ pub fn parse_filelist(filelist: &Vec<PathBuf>, argref: &ArgParser) -> Result<Vec
     if !missing_in_r1.is_empty() || !missing_in_r2.is_empty() {
         return Err(anyhow!(""))
     }
-
     
     // Finally, we format the output based on interleaving argument
     let mut final_vec: Vec<PathBuf> = vec![];
@@ -204,4 +204,30 @@ pub fn parse_filelist(filelist: &Vec<PathBuf>, argref: &ArgParser) -> Result<Vec
     // We convert each PathBuf to a String, then we separate by newline
     let final_string_vec: Vec<String> = final_vec.iter().map(|path| path.to_str().unwrap().to_string()).collect();
     return Ok(final_string_vec);
+}
+
+pub fn make_samplesheet(out_samplesheet: &Path, files: &[String]) -> Result<()> {
+
+    let out_samplesheet_file: File = File::create(out_samplesheet).context("Error in creating an output samplesheet")?;
+    let mut out_samplesheet_bufwriter: BufWriter<File> = BufWriter::new(out_samplesheet_file);
+    writeln!(out_samplesheet_bufwriter, "ID,R1,R2")?;
+
+    let mut i = 0;
+    while i < files.len() {
+        let curr_id: String = files[i].rsplit_once('/')
+            .map(|(_, filename)| filename)
+            .unwrap_or(&files[i])
+            .split_once('.')
+            .map(|(before, _)| before) 
+            .unwrap_or(&files[i]).to_owned();
+
+        writeln!(out_samplesheet_bufwriter, "{},{},{}",
+            curr_id,
+            files[i],
+            files[i+1])?;
+
+        i = i + 2;
+    }
+
+    Ok(())
 }

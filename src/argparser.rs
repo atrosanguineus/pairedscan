@@ -22,6 +22,10 @@ pub struct ArgParser
     #[arg(short, long, action)]
     pub interleave: bool,
 
+    /// Create a samplesheet file with set path
+    #[arg(short, long, action)]
+    pub out_samplesheet: Option<PathBuf>,
+
     /// Set a custom R1 prefix
     #[arg(short = '1', long = "p1", action)]
     pub prefix_1: Option<String>,
